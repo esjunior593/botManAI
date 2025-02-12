@@ -2,6 +2,14 @@ const venom = require('venom-bot');
 const axios = require('axios');
 const mysql = require('mysql2/promise');
 const config = require('./config');
+const fs = require('fs');
+const express = require('express');
+
+const app = express();
+const PORT = process.env.PORT || 3000; // Usa el puerto que asigna Railway
+
+// Servir archivos estáticos (para mostrar el QR)
+app.use(express.static('public'));
 
 async function connectToDatabase(retries = 5) {
   while (retries > 0) {
@@ -29,23 +37,20 @@ async function startBot() {
   const sessionName = 'whatsapp-session';
 
   venom
-  .create({
-    session: 'whatsapp-session',
-    multidevice: true,
-    headless: true, // Asegura que Puppeteer corra sin interfaz gráfica
-    browserArgs: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--disable-gpu',
-      '--disable-software-rasterizer', // Ayuda en entornos limitados
-      '--disable-features=site-per-process',
-      '--disable-web-security'
-    ]
-  })
-  .then(client => {
-    console.log("✅ Bot de WhatsApp iniciado correctamente");
+    .create({
+      session: sessionName,
+      multidevice: true,
+      headless: true,
+      browserArgs: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu'
+      ]
+    })
+    .then(client => {
+      console.log("✅ Bot de WhatsApp iniciado correctamente");
 
       client.onMessage(async message => {
         if (message.body.startsWith('/cod ')) {
@@ -75,5 +80,19 @@ async function startBot() {
     .catch(error => console.log('❌ Error al iniciar bot:', error));
 }
 
-startBot();
+// Servir el QR desde un archivo
+app.get('/qr', (req, res) => {
+  const qrPath = 'public/qr.png';
+  if (fs.existsSync(qrPath)) {
+    res.sendFile(__dirname + '/' + qrPath);
+  } else {
+    res.send('QR no generado aún.');
+  }
+});
 
+// Iniciar el servidor Express
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+});
+
+startBot();
