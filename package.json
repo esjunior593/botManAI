@@ -4,6 +4,7 @@
   "description": "Bot de WhatsApp con Venom-Bot y MySQL en Railway",
   "main": "bot.js",
   "scripts": {
+    "postinstall": "bash install.sh",
     "start": "node bot.js"
   },
   "dependencies": {
