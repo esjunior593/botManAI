@@ -29,20 +29,23 @@ async function startBot() {
   const sessionName = 'whatsapp-session';
 
   venom
-    .create({
-      session: sessionName,
-      multidevice: true,
-      headless: true, // Asegura que corre en modo headless
-      browserArgs: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu'
-      ]
-    })
-    .then(client => {
-      console.log("✅ Bot de WhatsApp iniciado correctamente");
+  .create({
+    session: 'whatsapp-session',
+    multidevice: true,
+    headless: true, // Asegura que Puppeteer corra sin interfaz gráfica
+    browserArgs: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+      '--disable-software-rasterizer', // Ayuda en entornos limitados
+      '--disable-features=site-per-process',
+      '--disable-web-security'
+    ]
+  })
+  .then(client => {
+    console.log("✅ Bot de WhatsApp iniciado correctamente");
 
       client.onMessage(async message => {
         if (message.body.startsWith('/cod ')) {
